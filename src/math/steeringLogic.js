@@ -1,42 +1,43 @@
 /**
- * RBYRCT Adaptive Steering Logic
- * Based on Ather & Gordon (2025): "Min-Hit" and "Scout" Phases
+ * RBYRCT Steering Logic
+ * Determines the next ray trajectory based on the current reconstruction state.
  */
 
-export const getNextRayTrajectory = (reconstructionGrid, phase, totalRaysFired) => {
-  const GRID_SIZE = 128; // Example 2D slice size
+export const getNextRayTrajectory = (reconstruction, phase, rays) => {
+  // Constants based on JSI 11-layer Janus Physics
+  const GRID_SIZE = 128;
+  const CENTER = GRID_SIZE / 2;
 
-  if (phase === 'SCOUT' || totalRaysFired < 2500) {
-    // Phase 1: Uniform/Random sampling to establish the ROI
-    // Equivalent to a 'light sprinkling of photons'
+  if (phase === 'SCOUT') {
+    // Phase 1: Uniform distribution to map the 'phantom' volume
+    // Returns a value between 0 and 128 (mapped to +/- 44 degrees)
     return {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
-      type: 'RANDOM_SCOUT'
+      x: Math.random() * GRID_SIZE,
+      y: CENTER,
+      intensity: 1.0
     };
   }
 
-  // Phase 2: Irradiating Phase (Min-Hit Steering)
-  // Goal: Sharpen real features and let noise 'ghosts' fade
-  let bestCandidate = { x: 0, y: 0, intensity: -1 };
+  // Phase 2: IRRADIATING (Min-Hit Steering)
+  // We look for the 'lesion' (high density areas) in the reconstruction array
+  let targetX = CENTER;
+  let maxDensity = -1;
 
-  // Scan the reconstruction for 'Features of possible interest'
-  for (let i = 0; i < reconstructionGrid.length; i++) {
-    const intensity = reconstructionGrid[i];
-    
-    // We target areas with higher density (potential lesions) 
-    // that haven't reached the SNR > 5.0 threshold yet
-    if (intensity > bestCandidate.intensity) {
-      bestCandidate = {
-        x: i % GRID_SIZE,
-        y: Math.floor(i / GRID_SIZE),
-        intensity: intensity
-      };
+  // Simple 'gradient descent' or 'search' for the ROI
+  // In a full MART implementation, this would look at the back-projection error
+  for (let i = 0; i < reconstruction.length; i++) {
+    if (reconstruction[i] > maxDensity) {
+      maxDensity = reconstruction[i];
+      targetX = i % GRID_SIZE;
     }
   }
 
+  // Add a small Gaussian 'jitter' to ensure coverage around the target
+  const jitter = (Math.random() - 0.5) * 5; 
+  
   return {
-    ...bestCandidate,
-    type: 'TARGETED_STEERING'
+    x: Math.max(0, Math.min(GRID_SIZE, targetX + jitter)),
+    y: CENTER,
+    intensity: 1.5 // Increased intensity for the targeted phase
   };
 };
