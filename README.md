@@ -2,7 +2,7 @@
 
 This repository contains the interactive WebGL implementation of **Ray-by-Ray Computed Tomography (RBYRCT)**. It demonstrates the ability to decouple imaging resolution from radiation dose using electronically steerable Janus emitters.
 
-## 核心技术 (Core Technology)
+## Core Technology
 - **Janus Emitter Logic**: Simulates an 11-layer Janus grid where each layer provides a 4° Bragg angle, totaling a **±44° steering range**.
 - **Adaptive Two-Phase Control**: 
     - **Scout Phase**: Initial 2,500 rays for low-resolution mapping.
