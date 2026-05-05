@@ -1,4 +1,4 @@
-# RBYRCT-WebGL-Demo: The Janus Steering Engine
+# RBYRCT-WebGL-Demo: The Janus Steering Engine 
 
 This repository contains the interactive WebGL implementation of **Ray-by-Ray Computed Tomography (RBYRCT)**. It demonstrates the ability to decouple imaging resolution from radiation dose using electronically steerable Janus emitters.
 
